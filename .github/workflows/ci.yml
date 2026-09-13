@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      API_URL: https://api.example.com
+      WEB_API_KEY: ci
+      REVALIDATE_SECRET: ci
+      ADMIN_URL: https://admin.example.com
+      NEXT_PUBLIC_SITE_URL: https://example.com
+      NEXT_PUBLIC_ADMIN_ORIGIN: https://admin.example.com
+      # Set SITE_SCHEMA_SRC / OPENAPI_URL secrets to check against the deployed API instead of a sibling checkout.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec next typegen
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm build
